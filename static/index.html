@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#123f33">
+    <title>PWD · Forest Health Detection</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/app.js" defer></script>
+  </head>
+
+  <body>
+    <header>
+      <a class="brand" href="/" aria-label="PWD home">
+        <span class="brand-icon">⌁</span>
+        PWD
+        <span class="brand-sub">FOREST VISION</span>
+      </a>
+      <span id="service" class="status">Connecting to model…</span>
+    </header>
+
+    <main>
+      <section class="intro">
+        <div>
+          <p class="eyebrow">FOREST HEALTH MONITORING</p>
+          <h1>Forest health,<span> at a glance.</span></h1>
+          <p class="subtitle">
+            Upload a forest image to locate sick trees and explore prediction confidence.
+          </p>
+        </div>
+        <div class="intro-note">
+          <span class="note-dot"></span>
+          Single-image analysis
+          <small>IMAGE DETECTION</small>
+        </div>
+      </section>
+
+      <div class="workspace">
+        <aside class="controls panel">
+          <div class="section-title">
+            <span class="step">01</span>
+            <h2>Detection settings</h2>
+          </div>
+
+          <label class="upload" id="dropzone" for="file">
+            <span class="upload-icon">↥</span>
+            <strong>Click to upload or drop an image</strong>
+            <span>JPG / PNG / WebP · Up to 15 MB</span>
+            <input
+              id="file"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+            >
+            <span class="choose">Choose image</span>
+          </label>
+          <p id="filename" class="filename">No image selected</p>
+
+          <div class="slider-label">
+            <label for="confidence">Confidence threshold</label>
+            <output id="confidence-value" for="confidence">0.25</output>
+          </div>
+          <input
+            id="confidence"
+            type="range"
+            min="0.01"
+            max="1"
+            step="0.01"
+            value="0.25"
+          >
+          <p class="hint">
+            Higher values remove low-confidence results but may miss targets.
+          </p>
+
+          <div class="slider-label">
+            <label for="iou">NMS IoU threshold</label>
+            <output id="iou-value" for="iou">0.45</output>
+          </div>
+          <input
+            id="iou"
+            type="range"
+            min="0.01"
+            max="1"
+            step="0.01"
+            value="0.45"
+          >
+          <p class="hint">
+            Lower values filter overlapping boxes more aggressively.
+          </p>
+
+          <button id="detect" class="primary" disabled>
+            Run detection
+            <span>↗</span>
+          </button>
+          <p id="message" role="status" aria-live="polite">
+            Choose an image to get started
+          </p>
+
+          <div class="model-card">
+            <span class="eyebrow">ACTIVE MODEL</span>
+            <strong id="model-name">best_nofft.onnx</strong>
+            <p id="model-detail">Loading model information…</p>
+            <div class="legend">
+              <span><i class="dot orange"></i>Showing sicktree only</span>
+            </div>
+          </div>
+        </aside>
+
+        <section class="viewer panel">
+          <div class="viewer-head">
+            <div class="section-title">
+              <span class="step">02</span>
+              <h2>Image preview</h2>
+            </div>
+            <div class="tabs" aria-label="Image view">
+              <button id="original-tab" class="active" aria-pressed="true">
+                Original
+              </button>
+              <button id="result-tab" disabled aria-pressed="false">
+                Detection
+              </button>
+            </div>
+          </div>
+
+          <div id="canvas" class="canvas">
+            <div id="empty" class="empty">
+              <div class="tree-art" aria-hidden="true">
+                <span>♧</span>
+                <span>♧</span>
+                <span>♧</span>
+              </div>
+              <h3>Start with a forest image</h3>
+              <p>
+                Upload an image to view the original and detection annotations here.
+              </p>
+            </div>
+            <img id="preview" alt="Uploaded image preview" hidden>
+            <div id="loading" hidden>
+              <span class="spinner"></span>
+              Detecting targets…
+            </div>
+          </div>
+
+          <div class="canvas-footer">
+            <span id="image-info">Waiting for an image</span>
+            <span>Images are used for this detection only</span>
+          </div>
+        </section>
+      </div>
+
+      <section class="results panel">
+        <div class="results-head">
+          <div class="section-title">
+            <span class="step">03</span>
+            <h2>Detection results</h2>
+            <span id="count" class="count">0 targets</span>
+          </div>
+          <div class="downloads">
+            <button id="download-image" disabled>↓ Annotated image</button>
+            <button id="download-json" disabled>↓ JSON data</button>
+          </div>
+        </div>
+
+        <div id="summary" class="summary">
+          Run detection to explore target classes, confidence scores and coordinates.
+        </div>
+
+        <div class="table-wrap" hidden id="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Target</th>
+                <th>Class</th>
+                <th>Confidence</th>
+                <th>Bounding box · Original image [x1, y1, x2, y2]</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <footer>
+        <span>PWD / FOREST VISION</span>
+        <span>Model predictions should be assessed alongside field observations.</span>
+      </footer>
+    </main>
+  </body>
+</html>
